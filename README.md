@@ -147,8 +147,7 @@ Docker 生产部署（包含 PostgreSQL、Ktor、Vue/Nginx，并适配
      # 后端 API 地址（开发）：默认指向本地 Ktor (端口 8011)，含 /api 前缀
      VITE_API_BASE_URL=http://localhost:8011/api
 
-     # WS 地址（必填）：只写协议与域名/端口，不带路径（/ws 由代码拼接）
-     VITE_WS_URL=ws://localhost:8011
+     # WS 地址会从 API 地址自动推导
      VITE_STUN_URL=''
      ```
 
@@ -157,8 +156,7 @@ Docker 生产部署（包含 PostgreSQL、Ktor、Vue/Nginx，并适配
      # 后端 API 地址（生产示例：同源部署填 /api，跨域部署填写具体 URL）
      VITE_API_BASE_URL=https://your-domain.com/api
 
-     # 生产 WebSocket / WebRTC STUN 服务配置
-     VITE_WS_URL=wss://your-domain.com
+     # WebSocket 与 API 同源，HTTPS 页面自动使用 wss
      VITE_STUN_URL=stun:your-domain.com:53478
      ```
 
