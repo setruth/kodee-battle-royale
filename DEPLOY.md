@@ -21,24 +21,25 @@ the Ktor HTTP connector also listens on loopback even though its container uses 
 
 ## 2. Configure secrets
 
-From the repository root on the server:
+The deployment helper generates `.env` with random PostgreSQL and JWT secrets, builds the images, starts the
+services, waits for Ktor, runs health checks, and prints the relevant deployment information:
 
 ```bash
-cp .env.example .env
-openssl rand -hex 32
-openssl rand -hex 32
+chmod +x deploy.sh
+./deploy.sh deploy
 ```
 
-Put one generated value in `POSTGRES_PASSWORD` and the other in `JWT_SECRET` inside `.env`.
-Set `WEBRTC_STUN_URL` only when a reachable STUN server is available. If it is empty or WebRTC negotiation fails,
-game traffic automatically falls back to WebSocket.
+It preserves an existing `.env` and never prints either secret. To inspect non-sensitive deployment settings or
+the host Nginx configuration later, run `./deploy.sh info` or `./deploy.sh nginx`.
 
-## 3. Build and start
+Set `WEBRTC_STUN_URL` in `.env` only when a reachable STUN server is available. If it is empty or WebRTC
+negotiation fails, game traffic automatically falls back to WebSocket.
+
+## 3. Check status and logs
 
 ```bash
-docker compose up -d --build
-docker compose ps
-docker compose logs -f backend
+./deploy.sh status
+./deploy.sh logs backend
 ```
 
 The first build downloads Gradle, JVM, Node, Nginx, PostgreSQL, and project dependencies, so it can take several minutes.
@@ -74,18 +75,18 @@ Open `https://korilin.com/kt15/` in a browser. The trailing slash is canonical; 
 
 ```bash
 # Status and logs
-docker compose ps
-docker compose logs -f --tail=200
+./deploy.sh status
+./deploy.sh logs
 
 # Deploy a new commit
 git pull
-docker compose up -d --build
+./deploy.sh up
 
 # Restart without rebuilding
-docker compose restart
+./deploy.sh restart
 
 # Stop containers without deleting database data
-docker compose down
+./deploy.sh down
 ```
 
 The PostgreSQL database is stored in the named volume `kodee-battle-royale_postgres-data`.
