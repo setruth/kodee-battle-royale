@@ -62,6 +62,9 @@ kotlin-game/                              # 根目录 (E:\VsCode\Web\kotlin-game
 
 ## 🚀 部署与运行指南
 
+Docker 生产部署（包含 PostgreSQL、Ktor、Vue/Nginx，并适配
+`https://korilin.com/kt15/`）请参见 [DEPLOY.md](DEPLOY.md)。
+
 ### 1. 环境准备
 
 - **JDK**: 17 或更高版本

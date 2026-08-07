@@ -13,6 +13,7 @@ data class AppConfig(
     val jwtSecret: String,
     val rtcMinPort: Int,
     val rtcMaxPort: Int,
+    val rtcStunUrl: String,
     /** 游戏规则默认值（TTK 等写死层）：yaml app.game.* 可调，房间创建/修改时再覆盖 */
     val game: GameSettings,
 ) {
@@ -32,6 +33,7 @@ data class AppConfig(
                 jwtSecret = secret,
                 rtcMinPort = opt("app.webrtc.minPort")?.toIntOrNull() ?: 50000,
                 rtcMaxPort = opt("app.webrtc.maxPort")?.toIntOrNull() ?: 50100,
+                rtcStunUrl = opt("app.webrtc.stunUrl") ?: "",
                 game = gameSettings(config),
             )
         }

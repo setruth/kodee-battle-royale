@@ -28,6 +28,7 @@ app:
   webrtc:
     minPort: 50000        # WebRTC UDP 动态端口池起始端口 (防火墙放行范围)
     maxPort: 50100        # WebRTC UDP 动态端口池结束端口
+    stunUrl: ""           # 可选，如 stun:your-domain.com:3478；留空则依赖 WS 降级
   game:
     shrinkTime: 15        # 每轮收缩时长(秒)
     shrinkCooldown: 45    # 每轮收缩后冷却(秒)

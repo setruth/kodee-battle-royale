@@ -70,15 +70,18 @@ object PeerManager {
         val f = factory ?: return
         closePeer(userId)
         try {
-            val iceServer = dev.onvoid.webrtc.RTCIceServer().apply {
-                urls = listOf("stun:159.75.28.209:53478")
-            }
             lateinit var peer: Peer
             val rtcConfiguration = RTCConfiguration()
             val cfg = com.setruth.game.config.appConfig
             rtcConfiguration.portAllocatorConfig.minPort = cfg.rtcMinPort
             rtcConfiguration.portAllocatorConfig.maxPort = cfg.rtcMaxPort
-            rtcConfiguration.iceServers = listOf(iceServer)
+            if (cfg.rtcStunUrl.isNotBlank()) {
+                rtcConfiguration.iceServers = listOf(
+                    dev.onvoid.webrtc.RTCIceServer().apply {
+                        urls = listOf(cfg.rtcStunUrl)
+                    }
+                )
+            }
             val pc = f.createPeerConnection(rtcConfiguration, object : PeerConnectionObserver {
 
                 override fun onIceCandidate(candidate: RTCIceCandidate) {

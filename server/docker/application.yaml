@@ -1,0 +1,36 @@
+ktor:
+  deployment:
+    host: $SERVER_HOST
+    port: $SERVER_PORT
+  application:
+    modules:
+      - com.setruth.game.plugins.SerializationKt.configureSerialization
+      - com.setruth.game.plugins.CorsKt.configureCORS
+      - com.setruth.game.auth.AuthPluginKt.configureAuth
+      - com.setruth.game.config.DbKt.configureDb
+      - com.setruth.game.net.WsRoutesKt.configureSockets
+      - com.setruth.game.HttpRoutesKt.configureHttpRoutes
+
+app:
+  db:
+    url: $DB_URL
+    user: $DB_USER
+    password: $DB_PASSWORD
+  jwt:
+    secret: $JWT_SECRET
+  webrtc:
+    minPort: $WEBRTC_MIN_PORT
+    maxPort: $WEBRTC_MAX_PORT
+    stunUrl: $WEBRTC_STUN_URL
+  game:
+    shrinkTime: 15
+    shrinkCooldown: 45
+    firstIdle: 15
+    friendlyFire: true
+    monsterTouchDamage: 25
+    monsterInitNpe: 10
+    monsterInitSoe: 5
+    monsterWaveNpe: 6
+    monsterWaveSoe: 3
+    bombsEnabled: true
+    itemCount: 12
