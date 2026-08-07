@@ -172,7 +172,8 @@ start_services() {
 show_info() {
     [ -f "$ENV_FILE" ] || warn "No .env file yet. Run: ./deploy.sh setup"
 
-    local frontend_port postgres_port rtc_min rtc_max stun_url
+    local docker_hub_prefix frontend_port postgres_port rtc_min rtc_max stun_url
+    docker_hub_prefix="m.daocloud.io/docker.io/library/"
     frontend_port=18080
     postgres_port=15432
     rtc_min=50000
@@ -180,6 +181,9 @@ show_info() {
     stun_url=""
 
     if [ -f "$ENV_FILE" ]; then
+        if grep -q '^DOCKER_HUB_PREFIX=' "$ENV_FILE"; then
+            docker_hub_prefix=$(env_value DOCKER_HUB_PREFIX)
+        fi
         frontend_port=$(env_value FRONTEND_PORT)
         postgres_port=$(env_value POSTGRES_PORT)
         rtc_min=$(env_value WEBRTC_MIN_PORT)
@@ -196,6 +200,7 @@ show_info() {
 Deployment information
   Project directory : $ROOT_DIR
   Public URL        : $PUBLIC_URL
+  Docker image source: ${docker_hub_prefix:-Docker Hub direct}
   Public health     : ${PUBLIC_URL}api/health
   Local frontend    : http://127.0.0.1:${frontend_port}/
   Local backend     : http://127.0.0.1:8011/api/health

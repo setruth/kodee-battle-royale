@@ -6,6 +6,10 @@ The backend image also installs the PulseAudio, udev, X11, D-Bus, ALSA, GBM, Pan
 libraries required by the bundled `webrtc-java` Linux native runtime; these packages do not need to be installed
 separately on the Docker host.
 
+All Docker Hub base images use the explicit `m.daocloud.io/docker.io/library/` prefix by default so deployment on
+mainland China servers does not fall back to `registry-1.docker.io`. Set `DOCKER_HUB_PREFIX=` in `.env` to use
+Docker Hub directly in another region.
+
 ## 1. Server prerequisites
 
 Install Docker Engine with the Compose plugin. Ensure DNS for `korilin.com` points to this server and HTTPS already works.

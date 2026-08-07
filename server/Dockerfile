@@ -1,4 +1,5 @@
-FROM gradle:9.5.1-jdk21 AS build
+ARG DOCKER_HUB_PREFIX=
+FROM ${DOCKER_HUB_PREFIX}gradle:9.5.1-jdk21 AS build
 
 WORKDIR /home/gradle/project
 COPY --chown=gradle:gradle build.gradle.kts settings.gradle.kts gradle.properties ./
@@ -6,7 +7,7 @@ COPY --chown=gradle:gradle gradle ./gradle
 COPY --chown=gradle:gradle src ./src
 RUN gradle buildFatJar --no-daemon
 
-FROM eclipse-temurin:21-jre-jammy
+FROM ${DOCKER_HUB_PREFIX}eclipse-temurin:21-jre-jammy
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \

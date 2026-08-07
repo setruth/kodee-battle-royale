@@ -2,7 +2,7 @@ name: kodee-battle-royale
 
 services:
   database:
-    image: postgres:17-alpine
+    image: ${DOCKER_HUB_PREFIX-m.daocloud.io/docker.io/library/}postgres:17-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-kotlin_game}
@@ -23,6 +23,8 @@ services:
   backend:
     build:
       context: ./server
+      args:
+        DOCKER_HUB_PREFIX: ${DOCKER_HUB_PREFIX-m.daocloud.io/docker.io/library/}
     restart: unless-stopped
     network_mode: host
     environment:
@@ -48,6 +50,7 @@ services:
     build:
       context: ./web
       args:
+        DOCKER_HUB_PREFIX: ${DOCKER_HUB_PREFIX-m.daocloud.io/docker.io/library/}
         VITE_API_BASE_URL: /kt15/api
         VITE_STUN_URL: ${WEBRTC_STUN_URL:-}
     restart: unless-stopped
