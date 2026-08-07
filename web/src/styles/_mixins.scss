@@ -1,0 +1,20 @@
+@use 'variables' as *;
+
+@mixin mobile {
+  @media (max-width: $break-mobile), (max-height: 520px), (pointer: coarse) and (max-width: 1024px) {
+    @content;
+  }
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin glass-panel {
+  background: rgba(27, 24, 41, 0.72);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(127, 82, 255, 0.28);
+  border-radius: $radius;
+}

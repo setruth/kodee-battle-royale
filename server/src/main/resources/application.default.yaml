@@ -1,0 +1,42 @@
+# -------------------------------------------------------------------
+# Server Default Configuration Template (application.default.yaml)
+# 本文件为服务器默认配置文件模板，已被 Git 追踪管理。
+# 运行时实际配置文件为 application.yaml（已被 .gitignore 忽略，不会提交到仓库）。
+# 首次运行服务器时若不存在 application.yaml，将自动从本模板复制生成。
+# 开发者可在本地修改 application.yaml 以配置具体的数据库密码、密钥等属性。
+# -------------------------------------------------------------------
+
+ktor:
+  deployment:
+    port: 8011
+  application:
+    modules:
+      - com.setruth.game.plugins.SerializationKt.configureSerialization
+      - com.setruth.game.plugins.CorsKt.configureCORS
+      - com.setruth.game.auth.AuthPluginKt.configureAuth
+      - com.setruth.game.config.DbKt.configureDb
+      - com.setruth.game.net.WsRoutesKt.configureSockets
+      - com.setruth.game.HttpRoutesKt.configureHttpRoutes
+
+app:
+  db:
+    url: "jdbc:postgresql://localhost:5432/kotlin_game"
+    user: "postgres"
+    password: "Password01!"
+  jwt:
+    secret: "dev-secret-change-me"
+  webrtc:
+    minPort: 50000        # WebRTC UDP 动态端口池起始端口 (防火墙放行范围)
+    maxPort: 50100        # WebRTC UDP 动态端口池结束端口
+  game:
+    shrinkTime: 15        # 每轮收缩时长(秒)
+    shrinkCooldown: 45    # 每轮收缩后冷却(秒)
+    firstIdle: 15         # 首轮收缩前静置(秒)
+    friendlyFire: true    # false = 玩家互伤为 0（PvP 伤害写死 2，见 GameConfig.PVP_DAMAGE）
+    monsterTouchDamage: 25 # 怪物触碰玩家伤害
+    monsterInitNpe: 10    # 初始 NPE 数量
+    monsterInitSoe: 5     # 初始 SOE 数量
+    monsterWaveNpe: 6     # 每轮收缩完成后NPE新增
+    monsterWaveSoe: 3     # 每轮收缩完成后SOE新增
+    bombsEnabled: true    # 轰炸区开关
+    itemCount: 12         # 场上道具数量上限

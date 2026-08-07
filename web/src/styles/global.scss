@@ -1,0 +1,87 @@
+@use 'variables' as *;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+:fullscreen,
+:-webkit-full-screen,
+:-moz-full-screen {
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+}
+
+body {
+  background: $bg-page;
+  color: $text-main;
+  font-family: 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Naive UI Modal 全局暗色居中与边距兜底 (解决 Teleport 后边距失效/贴屏问题) */
+.n-modal-container {
+  padding: 16px !important;
+  box-sizing: border-box !important;
+
+  .n-modal-mask {
+    background-color: rgba(13, 11, 24, 0.75) !important;
+    backdrop-filter: blur(8px);
+  }
+}
+
+.n-modal {
+  margin: auto !important;
+  max-width: calc(100vw - 32px) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(127, 82, 255, 0.25) !important;
+  background: rgba(22, 18, 40, 0.95) !important;
+  backdrop-filter: blur(24px) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 30px rgba(127, 82, 255, 0.2) !important;
+
+  .n-card-header {
+    padding: 18px 20px 10px !important;
+    text-align: center;
+
+    .n-card-header__main {
+      font-size: 16px !important;
+      font-weight: 700 !important;
+      color: #ffffff !important;
+      letter-spacing: 1px;
+    }
+  }
+
+  .n-card__content {
+    padding: 10px 20px 20px !important;
+  }
+}
+
+/* 特定 Modal 尺寸限制 */
+.bot-modal {
+  width: 320px !important;
+  max-width: calc(100vw - 32px) !important;
+}
+
+.history-modal {
+  width: 480px !important;
+  max-width: calc(100vw - 32px) !important;
+}
+
+.rules-modal {
+  width: 580px !important;
+  max-width: calc(100vw - 32px) !important;
+}
