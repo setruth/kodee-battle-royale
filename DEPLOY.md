@@ -11,7 +11,8 @@ mainland China servers does not fall back to `registry-1.docker.io`. Set `DOCKER
 Docker Hub directly in another region.
 
 Gradle plugins and Maven dependencies use Alibaba Cloud mirrors first, with the official repositories retained as
-fallbacks. Docker BuildKit also persists the Gradle user-home cache across builds.
+fallbacks. Docker BuildKit persists only Gradle's dependency cache across builds; temporary Gradle files remain isolated
+to each build, and concurrent builds serialize access to the dependency cache.
 
 ## 1. Server prerequisites
 
@@ -50,6 +51,7 @@ negotiation fails, game traffic automatically falls back to WebSocket.
 ```
 
 The first build downloads Gradle, JVM, Node, Nginx, PostgreSQL, and project dependencies, so it can take several minutes.
+Gradle uses plain detailed output during the image build, making slow dependency downloads visible in `deploy.log`.
 
 Verify the local services before editing the public Nginx config:
 
