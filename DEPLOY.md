@@ -10,6 +10,9 @@ All Docker Hub base images use the explicit `m.daocloud.io/docker.io/library/` p
 mainland China servers does not fall back to `registry-1.docker.io`. Set `DOCKER_HUB_PREFIX=` in `.env` to use
 Docker Hub directly in another region.
 
+Gradle plugins and Maven dependencies use Alibaba Cloud mirrors first, with the official repositories retained as
+fallbacks. Docker BuildKit also persists the Gradle user-home cache across builds.
+
 ## 1. Server prerequisites
 
 Install Docker Engine with the Compose plugin. Ensure DNS for `korilin.com` points to this server and HTTPS already works.

@@ -5,7 +5,8 @@ WORKDIR /home/gradle/project
 COPY --chown=gradle:gradle build.gradle.kts settings.gradle.kts gradle.properties ./
 COPY --chown=gradle:gradle gradle ./gradle
 COPY --chown=gradle:gradle src ./src
-RUN gradle buildFatJar --no-daemon
+RUN --mount=type=cache,target=/home/gradle/.gradle,uid=1000,gid=1000 \
+    gradle buildFatJar --no-daemon
 
 FROM ${DOCKER_HUB_PREFIX}eclipse-temurin:21-jre-jammy
 
