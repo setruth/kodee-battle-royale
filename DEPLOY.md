@@ -10,9 +10,10 @@ All Docker Hub base images use the explicit `m.daocloud.io/docker.io/library/` p
 mainland China servers does not fall back to `registry-1.docker.io`. Set `DOCKER_HUB_PREFIX=` in `.env` to use
 Docker Hub directly in another region.
 
-Gradle plugins and Maven dependencies use Alibaba Cloud mirrors first, with the official repositories retained as
-fallbacks. Docker BuildKit persists only Gradle's dependency cache across builds; temporary Gradle files remain isolated
-to each build, and concurrent builds serialize access to the dependency cache.
+Gradle plugins and Maven dependencies use Alibaba Cloud mirrors exclusively. This prevents Gradle from querying
+unreachable overseas repositories for dynamic dependency metadata on mainland China servers. Docker BuildKit persists
+only Gradle's dependency cache across builds; temporary Gradle files remain isolated to each build, and concurrent builds
+serialize access to the dependency cache.
 
 ## 1. Server prerequisites
 
@@ -100,3 +101,31 @@ git pull
 
 The PostgreSQL database is stored in the named volume `kodee-battle-royale_postgres-data`.
 Do not run `docker compose down -v` unless deleting all user and match data is intentional.
+
+## Offline image bundle
+
+When the server cannot reliably access Docker or Maven registries, build all Linux x86_64 images on a development
+computer with Docker Desktop:
+
+```bash
+./deploy.sh package
+```
+
+This creates `dist/kodee-battle-royale-linux-amd64.tar.gz`, containing the PostgreSQL, backend, and frontend runtime
+images. The first local build still downloads the required base images and dependencies, but subsequent builds reuse
+Docker and Gradle caches. Upload the bundle after pulling the latest deployment scripts on the server:
+
+```bash
+scp dist/kodee-battle-royale-linux-amd64.tar.gz root@SERVER_IP:/home/korilin/github/kodee-battle-royale/
+```
+
+Then start it on the server without pulling images or compiling code:
+
+```bash
+cd /home/korilin/github/kodee-battle-royale
+git pull
+./deploy.sh offline ./kodee-battle-royale-linux-amd64.tar.gz
+```
+
+The offline command preserves an existing `.env`, creates one with random secrets when missing, loads all three images,
+and starts Compose with registry pulls and image builds disabled.

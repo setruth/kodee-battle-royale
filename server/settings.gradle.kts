@@ -2,8 +2,6 @@ pluginManagement {
     repositories {
         maven("https://maven.aliyun.com/repository/gradle-plugin")
         maven("https://maven.aliyun.com/repository/public")
-        mavenCentral()
-        gradlePluginPortal()
     }
 }
 
@@ -14,7 +12,6 @@ plugins {
 dependencyResolutionManagement {
     repositories {
         maven("https://maven.aliyun.com/repository/public")
-        mavenCentral()
     }
     versionCatalogs {
         create("ktorLibs").from("io.ktor:ktor-version-catalog:3.5.0")

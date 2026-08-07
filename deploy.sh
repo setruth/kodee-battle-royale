@@ -6,8 +6,13 @@ ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ENV_FILE="$ROOT_DIR/.env"
 ENV_EXAMPLE="$ROOT_DIR/.env.example"
 COMPOSE_FILE="$ROOT_DIR/compose.yaml"
+OFFLINE_COMPOSE_FILE="$ROOT_DIR/compose.offline.yaml"
 NGINX_FILE="$ROOT_DIR/deploy/korilin.com.nginx.conf"
 PUBLIC_URL="https://korilin.com/kt15/"
+DIST_DIR="$ROOT_DIR/dist"
+BACKEND_OFFLINE_IMAGE="kodee-battle-royale-backend:linux-amd64"
+FRONTEND_OFFLINE_IMAGE="kodee-battle-royale-frontend:linux-amd64"
+POSTGRES_OFFLINE_IMAGE="kodee-battle-royale-postgres:17-alpine-linux-amd64"
 
 info() {
     printf '[INFO] %s\n' "$*"
@@ -28,6 +33,10 @@ require_command() {
 
 compose() {
     docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
+}
+
+compose_offline() {
+    docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" -f "$OFFLINE_COMPOSE_FILE" "$@"
 }
 
 env_value() {
@@ -169,6 +178,73 @@ start_services() {
     show_status
 }
 
+package_images() {
+    check_docker
+    require_command gzip
+    docker buildx version >/dev/null 2>&1 || fail "Docker Buildx is required (docker buildx)."
+
+    local docker_hub_prefix stun_url postgres_source bundle temp_file
+    docker_hub_prefix=${DOCKER_HUB_PREFIX:-m.daocloud.io/docker.io/library/}
+    stun_url=${WEBRTC_STUN_URL:-}
+    if [ -f "$ENV_FILE" ] && grep -q '^DOCKER_HUB_PREFIX=' "$ENV_FILE"; then
+        docker_hub_prefix=$(env_value DOCKER_HUB_PREFIX)
+    fi
+    if [ -f "$ENV_FILE" ] && grep -q '^WEBRTC_STUN_URL=' "$ENV_FILE"; then
+        stun_url=$(env_value WEBRTC_STUN_URL)
+    fi
+    postgres_source="${docker_hub_prefix}postgres:17-alpine"
+    bundle="$DIST_DIR/kodee-battle-royale-linux-amd64.tar.gz"
+
+    mkdir -p "$DIST_DIR"
+    temp_file=$(mktemp "$DIST_DIR/.images.XXXXXX.tar.gz")
+    trap 'rm -f "$temp_file"' RETURN
+
+    info "Building backend image for linux/amd64..."
+    docker buildx build --platform linux/amd64 --load \
+        --build-arg "DOCKER_HUB_PREFIX=$docker_hub_prefix" \
+        --tag "$BACKEND_OFFLINE_IMAGE" "$ROOT_DIR/server"
+
+    info "Building frontend image for linux/amd64..."
+    docker buildx build --platform linux/amd64 --load \
+        --build-arg "DOCKER_HUB_PREFIX=$docker_hub_prefix" \
+        --build-arg "VITE_API_BASE_URL=/kt15/api" \
+        --build-arg "VITE_STUN_URL=$stun_url" \
+        --tag "$FRONTEND_OFFLINE_IMAGE" "$ROOT_DIR/web"
+
+    info "Fetching PostgreSQL image for linux/amd64..."
+    docker pull --platform linux/amd64 "$postgres_source"
+    docker tag "$postgres_source" "$POSTGRES_OFFLINE_IMAGE"
+
+    info "Writing offline image bundle..."
+    docker save "$BACKEND_OFFLINE_IMAGE" "$FRONTEND_OFFLINE_IMAGE" "$POSTGRES_OFFLINE_IMAGE" \
+        | gzip -1 > "$temp_file"
+    mv "$temp_file" "$bundle"
+    trap - RETURN
+
+    info "Offline bundle created: $bundle"
+    info "Upload it to the server, then run: ./deploy.sh offline /path/to/$(basename "$bundle")"
+}
+
+start_offline() {
+    local bundle=${1:-}
+    [ -n "$bundle" ] || fail "Usage: ./deploy.sh offline /path/to/kodee-battle-royale-linux-amd64.tar.gz"
+    [ -f "$bundle" ] || fail "Offline image bundle not found: $bundle"
+    [ -f "$OFFLINE_COMPOSE_FILE" ] || fail "Missing offline Compose file: $OFFLINE_COMPOSE_FILE"
+
+    check_platform
+    check_docker
+    setup_env
+    validate_env
+    info "Loading offline images (this does not access an image registry)..."
+    docker load --input "$bundle"
+    info "Starting services without pulling or building images..."
+    compose_offline up -d --no-build --pull never
+    wait_for_services
+    compose_offline ps
+    run_checks
+    show_info
+}
+
 show_info() {
     [ -f "$ENV_FILE" ] || warn "No .env file yet. Run: ./deploy.sh setup"
 
@@ -258,6 +334,8 @@ Usage: ./deploy.sh [command]
 
 Commands:
   deploy          Configure, build, start, check, and show deployment info (default)
+  package         Build a linux/amd64 offline image bundle on the local computer
+  offline FILE    Load an offline image bundle and start without pulling or building
   setup           Create .env with random secrets; keep an existing .env unchanged
   up              Build and start all services
   restart         Restart all services without rebuilding images
@@ -274,6 +352,8 @@ EOF
 command=${1:-deploy}
 case "$command" in
     deploy) deploy ;;
+    package) package_images ;;
+    offline) start_offline "${2:-}" ;;
     setup) setup_env; show_info ;;
     up) start_services ;;
     restart) validate_env; check_docker; compose restart; show_status ;;

@@ -1,5 +1,6 @@
+# syntax=docker/dockerfile:1
 ARG DOCKER_HUB_PREFIX=
-FROM ${DOCKER_HUB_PREFIX}gradle:9.5.1-jdk21 AS build
+FROM --platform=$BUILDPLATFORM ${DOCKER_HUB_PREFIX}gradle:9.5.1-jdk21 AS build
 
 WORKDIR /home/gradle/project
 COPY --chown=gradle:gradle build.gradle.kts settings.gradle.kts gradle.properties ./
@@ -8,7 +9,7 @@ COPY --chown=gradle:gradle src ./src
 RUN --mount=type=cache,id=kodee-gradle-dependencies-v2,target=/home/gradle/.gradle/caches,uid=1000,gid=1000,sharing=locked \
     gradle buildFatJar --no-daemon --console=plain --info
 
-FROM ${DOCKER_HUB_PREFIX}eclipse-temurin:21-jre-jammy
+FROM --platform=$TARGETPLATFORM ${DOCKER_HUB_PREFIX}eclipse-temurin:21-jre-jammy
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \

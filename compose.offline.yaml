@@ -1,0 +1,9 @@
+services:
+  database:
+    image: kodee-battle-royale-postgres:17-alpine-linux-amd64
+
+  backend:
+    image: kodee-battle-royale-backend:linux-amd64
+
+  frontend:
+    image: kodee-battle-royale-frontend:linux-amd64
