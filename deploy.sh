@@ -196,24 +196,26 @@ package_images() {
     bundle="$DIST_DIR/kodee-battle-royale-linux-amd64.tar.gz"
 
     mkdir -p "$DIST_DIR"
-    temp_file=$(mktemp "$DIST_DIR/.images.XXXXXX.tar.gz")
+    temp_file=$(mktemp "$DIST_DIR/.images.tar.gz.XXXXXX")
     trap 'rm -f "$temp_file"' RETURN
 
     info "Building backend image for linux/amd64..."
-    docker buildx build --platform linux/amd64 --load \
+    docker buildx build --platform linux/amd64 --load --progress=plain \
         --build-arg "DOCKER_HUB_PREFIX=$docker_hub_prefix" \
         --tag "$BACKEND_OFFLINE_IMAGE" "$ROOT_DIR/server"
 
     info "Building frontend image for linux/amd64..."
-    docker buildx build --platform linux/amd64 --load \
+    docker buildx build --platform linux/amd64 --load --progress=plain \
         --build-arg "DOCKER_HUB_PREFIX=$docker_hub_prefix" \
         --build-arg "VITE_API_BASE_URL=/kt15/api" \
         --build-arg "VITE_STUN_URL=$stun_url" \
         --tag "$FRONTEND_OFFLINE_IMAGE" "$ROOT_DIR/web"
 
-    info "Fetching PostgreSQL image for linux/amd64..."
-    docker pull --platform linux/amd64 "$postgres_source"
-    docker tag "$postgres_source" "$POSTGRES_OFFLINE_IMAGE"
+    info "Preparing PostgreSQL image for linux/amd64..."
+    docker buildx build --platform linux/amd64 --load --progress=plain \
+        --build-arg "POSTGRES_SOURCE=$postgres_source" \
+        --tag "$POSTGRES_OFFLINE_IMAGE" \
+        --file "$ROOT_DIR/deploy/postgres.Dockerfile" "$ROOT_DIR/deploy"
 
     info "Writing offline image bundle..."
     docker save "$BACKEND_OFFLINE_IMAGE" "$FRONTEND_OFFLINE_IMAGE" "$POSTGRES_OFFLINE_IMAGE" \
